@@ -365,6 +365,268 @@ class wink_bulb(wink_binary_switch):
         return "<Wink Bulb %s %s %s>" % (
             self.name(), self.deviceId(), self.state())
 
+class wink_thermostat(object):
+    """ represents a wink.py thermostat
+    json_obj holds the json stat at init (and if there is a refresh it's updated
+    it's the native format for this objects methods
+    and looks like so:
+
+{
+    "data": [
+        {
+            "desired_state": {
+                "max_set_point": 23.333333333333332,
+                "min_set_point": 20,
+                "powered": true,
+                "units": null,
+                "mode": "auto"
+            },
+            "last_reading": {
+                "max_set_point": 23.333333333333332,
+                "max_set_point_updated_at": 1441558055.4084265,
+                "min_set_point": 20,
+                "min_set_point_updated_at": 1441558055.4084265,
+                "powered": true,
+                "powered_updated_at": 1441558055.4084265,
+                "units": null,
+                "units_updated_at": null,
+                "temperature": 23.88888888888889,
+                "temperature_updated_at": 1441558055.4084265,
+                "external_temperature": null,
+                "external_temperature_updated_at": null,
+                "min_min_setpoint": null,
+                "min_min_setpoint_updated_at": null,
+                "max_min_set_point": null,
+                "max_min_set_point_updated_at": null,
+                "min_max_set_point": null,
+                "min_max_set_point_updated_at": null,
+                "max_max_set_point": null,
+                "max_max_set_point_updated_at": null,
+                "deadband": null,
+                "deadband_updated_at": null,
+                "connection": true,
+                "connection_updated_at": 1441558055.4084265,
+                "mode": "auto",
+                "mode_updated_at": 1441558055.4084265,
+                "min_min_set_point": null,
+                "min_min_set_point_updated_at": null,
+                "modes_allowed": [
+                    "heat_only",
+                    "cool_only",
+                    "auto",
+                    "aux"
+                ],
+                "modes_allowed_updated_at": 1441558055.4084265,
+                "desired_max_set_point_updated_at": 1441543453.498528,
+                "desired_min_set_point_updated_at": 1441543453.498528,
+                "desired_powered_updated_at": 1441543453.498528,
+                "desired_units_updated_at": 1441543572.7400079,
+                "desired_mode_updated_at": 1441543453.498528,
+                "desired_powered_changed_at": 1441543453.498528,
+                "desired_min_set_point_changed_at": 1441543453.498528,
+                "desired_max_set_point_changed_at": 1441543453.498528,
+                "desired_mode_changed_at": 1441543453.498528,
+                "connection_changed_at": 1441531183.615773,
+                "temperature_changed_at": 1441558053.4795003,
+                "powered_changed_at": 1441531190.5478046,
+                "mode_changed_at": 1441531226.3174906,
+                "min_set_point_changed_at": 1441531190.5478046,
+                "max_set_point_changed_at": 1441543453.0561736,
+                "modes_allowed_changed_at": 1441531190.5478046,
+                "desired_units_changed_at": 1441531327.0416253
+            },
+            "thermostat_id": "1234",
+            "name": "Thermostat",
+            "locale": "en_us",
+            "units": {},
+            "created_at": 1441531183,
+            "hidden_at": null,
+            "capabilities": {
+                "fields": [
+                    {
+                        "field": "max_set_point",
+                        "type": "float",
+                        "mutability": "read-write"
+                    },
+                    {
+                        "field": "min_set_point",
+                        "type": "float",
+                        "mutability": "read-write"
+                    },
+                    {
+                        "field": "powered",
+                        "type": "boolean",
+                        "mutability": "read-write"
+                    },
+                    {
+                        "field": "units",
+                        "type": "nested_hash",
+                        "mutability": "read-only"
+                    },
+                    {
+                        "field": "temperature",
+                        "type": "float",
+                        "mutability": "read-only"
+                    },
+                    {
+                        "field": "external_temperature",
+                        "type": "float",
+                        "mutability": "read-only"
+                    },
+                    {
+                        "field": "min_min_setpoint",
+                        "type": "float",
+                        "mutability": "read-only"
+                    },
+                    {
+                        "field": "max_min_set_point",
+                        "type": "float",
+                        "mutability": "read-only"
+                    },
+                    {
+                        "field": "min_max_set_point",
+                        "type": "float",
+                        "mutability": "read-only"
+                    },
+                    {
+                        "field": "max_max_set_point",
+                        "type": "float",
+                        "mutability": "read-only"
+                    },
+                    {
+                        "field": "deadband",
+                        "type": "float",
+                        "mutability": "read-only"
+                    },
+                    {
+                        "field": "connection",
+                        "type": "boolean",
+                        "mutability": "read-only"
+                    },
+                    {
+                        "field": "mode",
+                        "type": "selection",
+                        "mutability": "read-write",
+                        "choices": [
+                            "heat_only",
+                            "cool_only",
+                            "auto",
+                            "aux"
+                        ]
+                    }
+                ]
+            },
+            "triggers": [],
+            "manufacturer_device_model": null,
+            "manufacturer_device_id": null,
+            "device_manufacturer": null,
+            "model_name": null,
+            "upc_id": "5123",
+            "upc_code": "generic_zwave_thermostat",
+            "hub_id": "123444",
+            "local_id": "2",
+            "radio_type": "zwave",
+            "linked_service_id": null,
+            "lat_lng": [
+                null,
+                null
+            ],
+            "location": "",
+            "smart_schedule_enabled": false
+        }
+    ],
+    "errors": [],
+    "pagination": { }
+}
+
+     """
+    def __init__(self, aJSonObj, objectprefix="thermostats"):
+        self.jsonState = aJSonObj
+        self.objectprefix = objectprefix
+        # Tuple (desired state, time)
+        self._last_call = (0, None)
+
+    def __str__(self):
+        return "%s %s %s" % (self.name(), self.deviceId(), self.state())
+
+    def __repr__(self):
+        return "<Wink thermostat %s %s %s>" % (self.name(), self.deviceId(), self.state())
+
+    @property
+    def _last_reading(self):
+        return self.jsonState.get('last_reading') or {}
+
+    def name(self):
+        return self.jsonState.get('name', "Unknown Name")
+
+    def state(self):
+        # Optimistic approach to setState:
+        # Within 15 seconds of a call to setState we assume it worked.
+        if self._recent_state_set():
+            return self._last_call[1]
+
+        return self._last_reading.get('temperature', False)
+
+    def deviceId(self):
+        return self.jsonState.get('thermostat_id', self.name())
+
+    def setState(self, state):
+        """
+        :param state:   a boolean of true (on) or false ('off')
+        :return: nothing
+        """
+        urlString = baseUrl + "/%s/%s" % (self.objectprefix, self.deviceId())
+        values = {"desired_state": {"powered": state}}
+        arequest = requests.put(urlString, data=json.dumps(values), headers=headers)
+        self._updateStateFromResponse(arequest.json())
+
+        self._last_call = (time.time(), state)
+
+    def refresh_state_at_hub(self):
+        """
+        Tell hub to query latest status from device and upload to Wink.
+        PS: Not sure if this even works..
+        """
+        urlString = baseUrl + "/%s/%s/refresh" % (self.objectprefix, self.deviceId())
+        requests.get(urlString, headers=headers)
+
+    def updateState(self):
+        """ Update state with latest info from Wink API. """
+        urlString = baseUrl + "/%s/%s" % (self.objectprefix, self.deviceId())
+        arequest = requests.get(urlString, headers=headers)
+        self._updateStateFromResponse(arequest.json())
+
+    def wait_till_desired_reached(self):
+        """ Wait till desired state reached. Max 10s. """
+        if self._recent_state_set():
+            return
+
+        # self.refresh_state_at_hub()
+        tries = 1
+
+        while True:
+            self.updateState()
+            last_read = self._last_reading
+
+            if last_read.get('desired_powered') == last_read.get('powered') \
+               or tries == 5:
+                break
+
+            time.sleep(2)
+
+            tries += 1
+            self.updateState()
+            last_read = self._last_reading
+
+    def _updateStateFromResponse(self, response_json):
+        """
+        :param response_json: the json obj returned from query
+        :return:
+        """
+        self.jsonState = response_json.get('data')
+
+    def _recent_state_set(self):
+        return time.time() - self._last_call[0] < 15
 
 def get_devices(filter, constructor):
     arequestUrl = baseUrl + "/users/me/wink_devices"
@@ -384,19 +646,18 @@ def get_devices(filter, constructor):
 def get_bulbs():
     return get_devices('light_bulb_id', wink_bulb)
 
-
 def get_switches():
     return get_devices('binary_switch_id', wink_binary_switch)
-
 
 def get_sensors():
     return get_devices('sensor_pod_id', wink_sensor_pod)
 
+def get_thermostats():
+    return get_devices('thermostat_id', wink_thermostat)
 
 def is_token_set():
     """ Returns if an auth token has been set. """
     return bool(headers)
-
 
 def set_bearer_token(token):
     global headers
