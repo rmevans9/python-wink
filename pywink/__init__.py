@@ -567,6 +567,9 @@ class wink_thermostat(object):
 
         return self._last_reading.get('temperature', False)
 
+    def current_temperature(self):
+        return self._last_reading.get('temperature', False)
+
     def deviceId(self):
         return self.jsonState.get('thermostat_id', self.name())
 
